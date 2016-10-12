@@ -9000,3 +9000,58 @@ const issues = [
     "url": "https://api.github.com/repos/learn-co-curriculum/js-donut-lab/issues/2"
   }
 ];
+
+
+
+///// Here be dragons /////
+
+///// Preparing for some Regex matching, because why not:
+var re = new RegExp("api\.github\.com", 'i')
+var newVersion = "api-v2.github.com"
+var autoIssue = new RegExp("automatically created by learn\.co\.")
+
+//// Mappity Map
+var issuesWithUpdatedApiUrl = issues.map(function (issue){
+  var newUrl = issue.url.replace(re, newVersion);
+  ////There's gotta be a better way to do what's below. I should be lazier here! :/
+  return Object.assign({}, issue, {
+    body: issue.body,
+    created_at: issue.created_at,
+    comments_count: issue.comments_count,
+    id: issue.id,
+    number: issue.number,
+    state: issue.state,
+    url: newUrl
+  });
+});
+
+//// Just a helper variable, returns an array of comments_counts to be used in the following reduce task
+var comments_count = issues.map(function (issue){
+  return issue.comments_count;
+});
+var commentCountAcrossIssues = comments_count.reduce(function(a,b){
+  return a + b;
+}, 0);
+
+//// List all open issues
+var openIssues = issues.map(function (issue){
+  if (issue.state === "open"){
+    return Object.assign({}, issue, issue);
+  }
+}).filter(Boolean);  /// This filter(Boolean)-thing is almost as good as Sacher cake!
+
+//// List all dem auto issues:
+var nonAutomaticIssues = issues.map(function (issue){
+  if (!autoIssue.test(issue.body)){
+    return Object.assign({}, issue, issue);
+  }
+}).filter(Boolean); /// almost, I said! What do you mean the cake is a lie?!?!?!?
+
+//// Helper function for producing some explicit (!!Parental Advisory, Paxton - I mean Tipper - please!!) table rows
+function createTableRows(issuesToBePrinted){
+  return issuesToBePrinted.map(function (issue){
+    return "<tr><td>" + issue.body + "</td><td>" + issue.created_at + "</td><td>" + issue.state + "</td></tr>";
+  });
+}
+//// Now slap some bird on that cracker! :D
+document.getElementById('results').innerHTML = createTableRows(nonAutomaticIssues).join("");
